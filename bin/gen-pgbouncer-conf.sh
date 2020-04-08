@@ -40,6 +40,8 @@ log_pooler_errors = ${PGBOUNCER_LOG_POOLER_ERRORS:-1}
 stats_period = ${PGBOUNCER_STATS_PERIOD:-60}
 ignore_startup_parameters = ${PGBOUNCER_IGNORE_STARTUP_PARAMETERS}
 query_wait_timeout = ${PGBOUNCER_QUERY_WAIT_TIMEOUT:-120}
+admin_users = pgbouncer
+stats_users = pgbouncer
 
 [databases]
 EOFEOF
@@ -51,7 +53,7 @@ do
 
   DB_MD5_PASS="md5"`echo -n ${DB_PASS}${DB_USER} | md5sum | awk '{print $1}'`
 
-  CLIENT_DB_NAME="db${n}"
+  CLIENT_DB_NAME=`echo $POSTGRES_URL | cut -d '_' -f 1 - |  awk '{print tolower($0)}'`
 
   echo "Setting ${POSTGRES_URL}_PGBOUNCER config var"
 
@@ -72,5 +74,9 @@ EOFEOF
 
   let "n += 1"
 done
+
+  cat >> /app/vendor/pgbouncer/users.txt << EOFEOF
+"pgbouncer" "md5be5544d3807b54dd0637f2439ecb03b9"
+EOFEOF
 
 chmod go-rwx /app/vendor/pgbouncer/*
